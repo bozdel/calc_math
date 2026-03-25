@@ -4,6 +4,22 @@
 #include <math.h>
 #include <stdlib.h>
 
+struct answer {
+	int n;
+	int *is_set;
+	double *answers;
+};
+
+struct answer *init_answers(int n) {
+	strcut answer *ans = (struct answer *)malloc(sizeof(struct answer));
+	ans->is_set = (int *)malloc(sizeof(int) * n);
+	for (int i = 0; i < n; i++) {
+		ans->is_set[0] = 0;
+	}
+	ans->answers = (double *)malloc(sizeof(double) * n);
+	return ans;
+}
+
 double a;
 double b;
 double c;
@@ -78,7 +94,7 @@ void solve_sq(double *p, double *q) {
 }
 
 // int
-void solve(double eps, double gap, double (*func)(double)) {
+void solve(double eps, double gap, double (*func)(double), struct answer *ans) {
 	double left = 0.0, right = 0.0;
 	if (!check_dis()) {
 		if (cub(0.0) > 0.0) find_interval(0.0, -gap, eps, cub, &left, &right); // x from [0.0, +inf)
@@ -95,6 +111,8 @@ void solve(double eps, double gap, double (*func)(double)) {
 	if ( ZERO(cub(p), eps) && ZERO(cub(q), eps) ) {
 		double answer = (p + q) / 2.0;
 		printf("x1: %f\n", answer);
+		ans->answers[0] = answer;
+		ans->is_set[0] = 1;
 		return;
 	}
 	// else if ( (-eps < cub(p) && cub(p) < eps) ) {
@@ -133,11 +151,19 @@ void solve(double eps, double gap, double (*func)(double)) {
 		v2 = find_value(eps, cub, left, right);
 		find_interval(q, gap, eps, cub, &left, &right); // x from [q, +inf)
 		v3 = find_value(eps, cub, left, right);
+		ans->answers[0] = v1;
+		ans->is_set[0] = 1;
+		ans->answers[1] = v2;
+		ans->is_set[1] = 1;
+		ans->answers[2] = v3;
+		ans->is_set[2] = 1;
 		printf("x1: %f, x2: %f, x3: %f\n", v1, v2, v3);
 		return;
 	}
 	return;
 }
+
+
 
 int main(int argc, char *argv[]) {
 	int opt = 0;
@@ -155,7 +181,11 @@ int main(int argc, char *argv[]) {
 	double p, q;
 	solve_sq(&p, &q);
 	printf("p: %.3f, q: %.3f\n", p, q);*/
-	solve(eps, gap, cub);
+	struct answer ans = init_answers(3);
+
+	solve(eps, gap, cub, &ans);
+	printf("\n");
+	printf("answers: x1: %f, x2: %f, x3: %f\n", ans[0], ans[1], ans[2]);
 
 	return 0;
 }
